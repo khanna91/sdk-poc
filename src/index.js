@@ -82,7 +82,9 @@
     let astroIdentitySessionState = getCookie(SESSION_COOKIE) // Astro Identity Session State
     if (!astroIdentitySessionState) {
       astroIdentitySessionState = getQueryStringValue('session_state')
-      setCookie(SESSION_COOKIE, astroIdentitySessionState);
+      if (astroIdentitySessionState) {
+        setCookie(SESSION_COOKIE, astroIdentitySessionState);
+      }
     }
     let astroNonce = getCookie(NONCE_COOKIE) // Astro Identity Nonce
     if(astroIdentitySessionState) { // need to get user profile
@@ -108,7 +110,7 @@
   }
 
   login = (params) => {
-    if (!params.partnerKey || !params.redirect_uri) {
+    if (!params.partnerKey || !params.redirect_uri || !params.continue) {
       console.error('Missing Identity Parameters');
       return;
     }
@@ -116,8 +118,9 @@
     params.scope = 'openid';
     params.nonce = generateNonce();
     params.state = '321';
+    params.redirectToLogin = true;
     queryString = makeQueryString(params);
-    window.location.href = `${PORTAL_DOMAIN}/login?${queryString}`;
+    window.location.href = `${PORTAL_DOMAIN}/auth?${queryString}`;
   }
 
   register = (params) => {
