@@ -3,7 +3,7 @@
     isLoggedIn: false,
     detail: null
   }
-  const PORTAL_DOMAIN = 'https://identity-portal-dev.identity.astro.com.my';
+  const PORTAL_DOMAIN = 'http://localhost:3000';
   const API_DOMAIN = 'https://middleware-service-develop.identity.astro.com.my';
   const API_VERSION = 'api/v1';
   const SESSION_COOKIE = 'AISS';
@@ -79,15 +79,10 @@
 
   // funtion to check whether needs redirection or not, and authenticate the user
   authenticate = (queryParams) => {
-    let astroIdentitySessionState = getCookie(SESSION_COOKIE) // Astro Identity Session State
-    if (!astroIdentitySessionState) {
-      astroIdentitySessionState = getQueryStringValue('session_state')
-      if (astroIdentitySessionState) {
-        setCookie(SESSION_COOKIE, astroIdentitySessionState);
-      }
-    }
+    let astroIdentitySessionState = getQueryStringValue('session_state') || getCookie(SESSION_COOKIE) // Astro Identity Session State
     let astroNonce = getCookie(NONCE_COOKIE) // Astro Identity Nonce
     if(astroIdentitySessionState) { // need to get user profile
+      setCookie(SESSION_COOKIE, astroIdentitySessionState);
       if (!astroNonce) {
         astroNonce = generateNonce();
         setCookie(NONCE_COOKIE, astroNonce); 
