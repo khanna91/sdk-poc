@@ -13,7 +13,7 @@
   <script>
     const domain = 'http://localhost:3001';
     window.sso.authenticate({
-      continue: `${domain}/setCookie`
+      continue: `${domain}`
     });
   </script>
   <!-- Latest compiled and minified CSS -->
@@ -55,7 +55,8 @@
     $(document).ready(function () {
       // partner script
       const displayUser = () => {
-        if (window.sso.user.isLoggedIn) {
+        const user = window.sso.getCurrentUser();
+        if (user) {
           console.log('yes im logged in')
           $('#login-btn').removeClass('show').addClass('hide');
           $('#register-btn').removeClass('show').addClass('hide');

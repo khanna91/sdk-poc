@@ -2,6 +2,7 @@ const SSO = ((global, $, partnerKey) => {
   const CONFIG = require('./config');
   const Utils = require('./utils')(global);
   const API = require('./api')(global, $, partnerKey);
+  const User = require('./user')();
 
   const authenticate = (queryParams) => {
     let astroIdentitySessionState = Utils.getQueryStringValue('session_state') || Utils.getCookie(CONFIG.COOKIE.SESSION) // Astro Identity Session State
@@ -12,7 +13,13 @@ const SSO = ((global, $, partnerKey) => {
         astroNonce = Utils.generateNonce();
       }
       Utils.setCookie(CONFIG.COOKIE.NONCE, astroNonce);
-      API.getProfile(astroIdentitySessionState, astroNonce);
+      API.getProfile(astroIdentitySessionState, astroNonce).then((user) => {
+        User.setUser(user);
+        global.dispatchEvent(new CustomEvent("authStatusChange"));
+      }).catch(err => { 
+        User.setUser(null);
+        global.dispatchEvent(new CustomEvent("authStatusChange")); 
+      });
     } else if (!astroNonce) { // need to redirect to identity portal to check user auth state
       queryString = Utils.makeQueryString(queryParams);
       global.location.href = `${CONFIG.PORTAL.DOMAIN}/auth?${queryString}`;
@@ -56,7 +63,7 @@ const SSO = ((global, $, partnerKey) => {
   }
 
   const getCurrentUser = () => {
-    return null
+    return User.getUser();
   }
 
   return {
