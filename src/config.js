@@ -6,7 +6,7 @@ module.exports = {
     LOGOUT: '/oidc/logout'
   },
   PORTAL: {
-    DOMAIN: 'http://localhost:3000'
+    DOMAIN: 'https://identity-portal-dev.identity.astro.com.my'
   },
   COOKIE: {
     SESSION: 'AISS',

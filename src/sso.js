@@ -27,14 +27,6 @@ const SSO = ((global, $, partnerKey) => {
     // otherwise, user never logged in, dont do anything
   }
 
-  const setIdentity = () => {
-    Utils.setCookie(CONFIG.COOKIE.NONCE, Utils.generateNonce());
-    const sessionState = Utils.getQueryStringValue('session_state');
-    if(sessionState !== undefined && sessionState !== null && sessionState !== '') {
-      Utils.setCookie(SESSION_COOKIE, sessionState);
-    }
-  }
-
   const login = (params) => {
     if (!params.partnerKey || !params.redirect_uri || !params.continue) {
       console.error('Missing Identity Parameters');
@@ -66,12 +58,26 @@ const SSO = ((global, $, partnerKey) => {
     return User.getUser();
   }
 
+  const logout = (params) => {
+    const sessionState = Utils.getCookie(CONFIG.COOKIE.SESSION);
+    const nonce = Utils.getCookie(CONFIG.COOKIE.NONCE);
+    API.logout(sessionState, nonce).then((user) => {
+      User.setUser(null);
+      global.dispatchEvent(new CustomEvent("authStatusChange"));
+      Utils.deleteCookie(CONFIG.COOKIE.SESSION)
+      queryString = Utils.makeQueryString(params);
+      window.location.href = `${CONFIG.PORTAL.DOMAIN}/logout?${queryString}`;
+    }).catch(err => { 
+      console.error(err);
+    });
+  }
+
   return {
     authenticate: authenticate,
-    setIdentity: setIdentity,
     login: login,
     register: register,
-    getCurrentUser: getCurrentUser
+    getCurrentUser: getCurrentUser,
+    logout: logout
   }
 });
 
