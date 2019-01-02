@@ -7,7 +7,6 @@ const SSO = ((global, $, partnerKey) => {
   const authenticate = (queryParams) => {
     let astroIdentitySessionState = Utils.getQueryStringValue('session_state') || Utils.getCookie(CONFIG.COOKIE.SESSION) // Astro Identity Session State
     let astroNonce = Utils.getQueryStringValue('nonce') || Utils.getCookie(CONFIG.COOKIE.NONCE) // Astro Identity Nonce
-    debugger;
     if(astroIdentitySessionState) { // need to get user profile
       Utils.setCookie(CONFIG.COOKIE.SESSION, astroIdentitySessionState);
       if (!astroNonce) {
