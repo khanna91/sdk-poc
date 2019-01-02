@@ -23,6 +23,7 @@ const SSO = ((global, $, partnerKey) => {
     } else if (!astroNonce) { // need to redirect to identity portal to check user auth state
       astroNonce = Utils.generateNonce();
       Utils.setCookie(CONFIG.COOKIE.NONCE, astroNonce);
+      queryParams.nonce = astroNonce;
       queryString = Utils.makeQueryString(queryParams);
       global.location.href = `${CONFIG.PORTAL.DOMAIN}/auth?${queryString}`;
     }
