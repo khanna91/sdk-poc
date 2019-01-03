@@ -18,6 +18,7 @@ const SSO = ((global, $, partnerKey) => {
         global.dispatchEvent(new CustomEvent("authStatusChange"));
       }).catch(err => { 
         User.setUser(null);
+        Utils.deleteCookie(CONFIG.COOKIE.SESSION);
         global.dispatchEvent(new CustomEvent("authStatusChange")); 
       });
     } else if (!astroNonce) { // need to redirect to identity portal to check user auth state
