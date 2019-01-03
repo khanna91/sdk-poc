@@ -1,7 +1,7 @@
-const SSO = ((global, $, partnerKey) => {
+const SSO = ((global, partnerKey) => {
   const CONFIG = require('./config');
   const Utils = require('./utils')(global);
-  const API = require('./api')(global, $, partnerKey);
+  const API = require('./api')(global, partnerKey);
   const User = require('./user')();
 
   const authenticate = (queryParams) => {
