@@ -1,14 +1,14 @@
-import '@babel/polyfill';
+// import '@babel/polyfill';
 const path = require('path');
 
 module.exports = {
 	entry: {
 		main: [
-			'@babel/polyfill',
+			// '@babel/polyfill',
 			'./src/index.js',
 		]
 	},
-	mode: 'development',
+	mode: 'production',
 	output: {
 		filename: 'main.js',
 		path: path.resolve(__dirname, 'lib')
