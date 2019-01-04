@@ -10,6 +10,7 @@ module.exports = {
   },
   COOKIE: {
     SESSION: 'AISS',
-    NONCE: 'AIN'
+    NONCE: 'AIN',
+    AUTH_CHECK: 'AIAC'
   }
 }

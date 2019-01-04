@@ -7,12 +7,13 @@ const SSO = ((global, partnerKey) => {
   const authenticate = (queryParams) => {
     let astroIdentitySessionState = Utils.getQueryStringValue('session_state') || Utils.getCookie(CONFIG.COOKIE.SESSION) // Astro Identity Session State
     let astroNonce = Utils.getQueryStringValue('nonce') || Utils.getCookie(CONFIG.COOKIE.NONCE) // Astro Identity Nonce
+    if (!astroNonce) {
+      astroNonce = Utils.generateNonce();
+    }
+    Utils.setCookie(CONFIG.COOKIE.NONCE, astroNonce);
+    let authCheck = Utils.getCookie(CONFIG.COOKIE.AUTH_CHECK);
     if(astroIdentitySessionState) { // need to get user profile
       Utils.setCookie(CONFIG.COOKIE.SESSION, astroIdentitySessionState);
-      if (!astroNonce) {
-        astroNonce = Utils.generateNonce();
-      }
-      Utils.setCookie(CONFIG.COOKIE.NONCE, astroNonce);
       API.getProfile(astroIdentitySessionState, astroNonce).then((user) => {
         User.setUser(user);
         global.dispatchEvent(new CustomEvent("authStatusChange"));
@@ -21,9 +22,8 @@ const SSO = ((global, partnerKey) => {
         Utils.deleteCookie(CONFIG.COOKIE.SESSION);
         global.dispatchEvent(new CustomEvent("authStatusChange")); 
       });
-    } else if (!astroNonce) { // need to redirect to identity portal to check user auth state
-      astroNonce = Utils.generateNonce();
-      Utils.setCookie(CONFIG.COOKIE.NONCE, astroNonce);
+    } else if (!authCheck) { // need to redirect to identity portal to check user auth state
+      Utils.setCookie(CONFIG.COOKIE.AUTH_CHECK, true, 5);
       queryParams.nonce = astroNonce;
       queryString = Utils.makeQueryString(queryParams);
       global.location.href = `${CONFIG.PORTAL.DOMAIN}/auth?${queryString}`;
