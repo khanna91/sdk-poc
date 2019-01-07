@@ -3,7 +3,10 @@ const fetch = require("whatwg-fetch");
 
 const API = ((global, partnerKey) => {
   const parseJSON = (response) => {
-    return response.json()
+    if(response.status >= 200 && response.status < 400) {
+      return response.json()
+    }
+    throw response.json()
   }
 
   const getProfile = (sessionState, nonce) => {
@@ -38,9 +41,21 @@ const API = ((global, partnerKey) => {
     });
   }
 
+  const getPartner = () => {
+    return new Promise((resolve, reject) => {
+      global.fetch(
+        `${CONFIG.API.DOMAIN}${CONFIG.API.VERSION}${CONFIG.API.PARTNER}/${partnerKey}`,
+        {
+          method: 'GET'
+        }
+      ).then(parseJSON).then(data => resolve(data.response)).catch(err => reject(new Error(err)));
+    });
+  }
+
   return {
     getProfile: getProfile,
-    logout: logout
+    logout: logout,
+    getPartner: getPartner
   }
 });
 

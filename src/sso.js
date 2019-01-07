@@ -3,6 +3,7 @@ const SSO = ((global, partnerKey) => {
   const Utils = require('./utils')(global);
   const API = require('./api')(global, partnerKey);
   const User = require('./user')();
+  const UI = require('./ui')(global, partnerKey);
 
   const authenticate = (queryParams) => {
     let astroIdentitySessionState = Utils.getQueryStringValue('session_state') || Utils.getCookie(CONFIG.COOKIE.SESSION) // Astro Identity Session State
@@ -14,14 +15,26 @@ const SSO = ((global, partnerKey) => {
     let authCheck = Utils.getCookie(CONFIG.COOKIE.AUTH_CHECK);
     if(astroIdentitySessionState) { // need to get user profile
       Utils.setCookie(CONFIG.COOKIE.SESSION, astroIdentitySessionState);
-      API.getProfile(astroIdentitySessionState, astroNonce).then((user) => {
+      const partnerInfo = API.getPartner().then(partner => partner).catch(err => {
+        return {
+          showLinkingPopup: false
+        }
+      })
+      const userInfo = API.getProfile(astroIdentitySessionState, astroNonce).then((user) => {
         User.setUser(user);
         global.dispatchEvent(new CustomEvent("authStatusChange"));
+        return user;
       }).catch(err => { 
         User.setUser(null);
         Utils.deleteCookie(CONFIG.COOKIE.SESSION);
         global.dispatchEvent(new CustomEvent("authStatusChange")); 
+        return null;
       });
+      Promise.all([partnerInfo, userInfo]).then(result => {
+        if(result[0] && result[0].showLinkingPopup && result[1] && result[1].linkingInfo && !result[1].linkingInfo.isProfileLinked) {
+          UI.createUiNotificationBar();
+        }
+      })
     } else if (!authCheck) { // need to redirect to identity portal to check user auth state
       Utils.setCookie(CONFIG.COOKIE.AUTH_CHECK, true, 5);
       queryParams.nonce = astroNonce;
@@ -32,7 +45,7 @@ const SSO = ((global, partnerKey) => {
   }
 
   const login = (params) => {
-    if (!params.partnerKey || !params.redirect_uri || !params.continue) {
+    if (!params.redirect_uri || !params.continue) {
       console.error('Missing Identity Parameters');
       return;
     }
@@ -41,12 +54,13 @@ const SSO = ((global, partnerKey) => {
     params.nonce = Utils.generateNonce();
     params.state = '321';
     params.redirectToLogin = true;
+    params.partnerKey = partnerKey;
     queryString = Utils.makeQueryString(params);
     global.location.href = `${CONFIG.PORTAL.DOMAIN}/auth?${queryString}`;
   }
 
   const register = (params) => {
-    if (!params.partnerKey || !params.redirect_uri) {
+    if (!params.redirect_uri) {
       console.error('Missing Identity Parameters');
       return;
     }
@@ -54,6 +68,7 @@ const SSO = ((global, partnerKey) => {
     params.scope = 'openid';
     params.nonce = Utils.generateNonce();
     params.state = '321';
+    params.partnerKey = partnerKey;
     queryString = Utils.makeQueryString(params);
     global.location.href = `${CONFIG.PORTAL.DOMAIN}/register?${queryString}`;
   }
@@ -68,7 +83,8 @@ const SSO = ((global, partnerKey) => {
     API.logout(sessionState, nonce).then((user) => {
       User.setUser(null);
       global.dispatchEvent(new CustomEvent("authStatusChange"));
-      Utils.deleteCookie(CONFIG.COOKIE.SESSION)
+      Utils.deleteCookie(CONFIG.COOKIE.SESSION);
+      params.partnerKey = partnerKey;
       queryString = Utils.makeQueryString(params);
       window.location.href = `${CONFIG.PORTAL.DOMAIN}/logout?${queryString}`;
     }).catch(err => { 
