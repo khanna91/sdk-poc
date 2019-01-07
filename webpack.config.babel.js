@@ -8,9 +8,9 @@ module.exports = {
 			'./src/index.js',
 		]
 	},
-	mode: 'production',
+	mode: 'development',
 	output: {
-		filename: 'main.js',
+		filename: 'dev.js',
 		path: path.resolve(__dirname, 'lib')
 	},
 	module: {
