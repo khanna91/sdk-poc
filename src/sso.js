@@ -70,7 +70,7 @@ const SSO = ((global, partnerKey) => {
     params.state = '321';
     params.partnerKey = partnerKey;
     queryString = Utils.makeQueryString(params);
-    global.location.href = `${CONFIG.PORTAL.DOMAIN}/register?${queryString}`;
+    global.location.href = `${CONFIG.PORTAL.DOMAIN}/signup?${queryString}`;
   }
 
   const getCurrentUser = () => {
