@@ -1,3 +1,6 @@
+const CryptoJS = require('crypto-js');
+const config = require('./config');
+
 const Utils = ((global) => {
   // function to generate nonce
   const generateNonce = () => {
@@ -48,13 +51,54 @@ const Utils = ((global) => {
     return queryString
   }
 
+  const base64url = (source) => {
+    // Encode in classical base64
+    let encodedSource = CryptoJS.enc.Base64.stringify(source);
+    
+    // Remove padding equal characters
+    encodedSource = encodedSource.replace(/=+$/, '');
+    
+    // Replace characters according to base64url specifications
+    encodedSource = encodedSource.replace(/\+/g, '-');
+    encodedSource = encodedSource.replace(/\//g, '_');
+    
+    return encodedSource;
+  }
+
+  const encryptData = (sessionState, nonce) => {
+    // return CryptoJS.AES.encrypt(data, `${config.AUTHORIZER}${timestamp}`).toString();
+    const headers = {
+      alg: 'HS256',
+      typ: 'JWT'
+    }
+    const stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(headers));
+    const encodedHeader = base64url(stringifiedHeader);
+
+    const time = new Date().getTime();
+    const data = {
+      iat: time,
+      exp: time + (5 * 60 * 1000),
+      sessionState,
+      nonce
+    }
+    const stringifiedData = CryptoJS.enc.Utf8.parse(JSON.stringify(data));
+    const encodedData = base64url(stringifiedData);
+    
+    let signature = encodedHeader + "." + encodedData;
+    signature = CryptoJS.HmacSHA256(signature, config.AUTHORIZER);
+    signature = base64url(signature);
+
+    return `${encodedHeader}.${encodedData}.${signature}`;
+  }
+
   return {
     generateNonce: generateNonce,
     getQueryStringValue: getQueryStringValue,
     getCookie: getCookie,
     setCookie: setCookie,
     deleteCookie: deleteCookie,
-    makeQueryString: makeQueryString
+    makeQueryString: makeQueryString,
+    encryptData: encryptData
   }
 });
 

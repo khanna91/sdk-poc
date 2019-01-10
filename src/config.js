@@ -14,5 +14,6 @@ module.exports = {
     SESSION: 'AISS',
     NONCE: 'AIN',
     AUTH_CHECK: 'AIAC'
-  }
+  },
+  AUTHORIZER: 'G78YRDZj88oXTv7cymURh9MMzgd8Uo4o'
 }

@@ -1,7 +1,7 @@
 const CONFIG = require('./config');
 const fetch = require("whatwg-fetch");
 
-const API = ((global, partnerKey) => {
+const API = ((global, partnerKey, Utils) => {
   const parseJSON = (response) => {
     if(response.status >= 200 && response.status < 400) {
       return response.json()
@@ -16,9 +16,8 @@ const API = ((global, partnerKey) => {
         {
           method: 'GET',
           headers: {
-            "session-state": sessionState,
-            "client-id": partnerKey,
-            nonce
+            'Authorization': `Bearer ${Utils.encryptData(sessionState, nonce)}`,
+            'client-id': partnerKey
           }
         }
       ).then(parseJSON).then(data => resolve(data.response)).catch(err => reject(new Error(err)));
@@ -32,9 +31,8 @@ const API = ((global, partnerKey) => {
         {
           method: 'DELETE',
           headers: {
-            "session-state": sessionState,
-            "client-id": partnerKey,
-            nonce
+            'Authorization': `Bearer ${Utils.encryptData(sessionState, nonce)}`,
+            'client-id': partnerKey
           }
         }
       ).then(parseJSON).then(data => resolve(data.response)).catch(err => reject(new Error(err)));
