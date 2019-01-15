@@ -1,6 +1,6 @@
 const config = require('./config');
 
-const UI = ((global, partnerKey) => {
+const UI = ((global, partnerKey, Utils) => {
   const applyBarStyling = (div) => {
     div.setAttribute('id', 'astro-identity-notification-bar');
     div.style.position = "absolute";
@@ -24,7 +24,9 @@ const UI = ((global, partnerKey) => {
     paragraph.appendChild(text);
     // append link
     const anchor = document.createElement('a');
-    anchor.setAttribute('href', `${config.PORTAL.DOMAIN}${config.PORTAL.LINKING}?continue=${encodeURIComponent(global.location.href)}`);
+    const sessionState = Utils.getCookie(config.COOKIE.SESSION);
+    const nonce = Utils.getCookie(config.COOKIE.NONCE);
+    anchor.setAttribute('href', `${config.PORTAL.DOMAIN}${config.PORTAL.VERIFY_SESSION}?redirect_uri=${encodeURIComponent(global.location.href)}&session_state=${sessionState}&nonce=${nonce}&code=partnerSdk&state=321`);
     const linkText = document.createTextNode("here");
     anchor.style.color = '#08080a';
     anchor.appendChild(linkText);
